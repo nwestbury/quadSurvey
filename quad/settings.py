@@ -52,12 +52,12 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'quad.urls'
 
-print('wow', BASE_DIR)
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
             os.path.join(SETTINGS_DIR, 'templates'),
+            os.path.join(SETTINGS_DIR, 'client', 'build'),
         ],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -72,7 +72,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'quad.wsgi.application'
-
 
 # Database
 # https://docs.djangoproject.com/en/2.0/ref/settings/#databases
@@ -127,3 +126,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.0/howto/static-files/
 
 STATIC_URL = '/static/'
+STATICFILES_DIRS = (
+    os.path.join(SETTINGS_DIR, 'client', 'build'),
+    os.path.join(SETTINGS_DIR, 'client', 'build', 'static'),
+)
