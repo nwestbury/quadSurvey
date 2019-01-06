@@ -169,6 +169,10 @@ def survey_response(request):
         }, status=status.HTTP_401_UNAUTHORIZED)
 
     data = serializer.validated_data
+
+    if Value.objects.filter(uuid=data['uuid']).exists():
+        return Response({'success': False}, status=status.HTTP_401_UNAUTHORIZED)
+
     value = Value(uuid=data['uuid'], gender=data['gender'], age=data['age'],
                   native_languages=json.dumps(data['nativeLanguages']), convo_languages=json.dumps(data['convoLanguages']))
     value.save()
