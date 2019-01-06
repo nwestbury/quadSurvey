@@ -95,7 +95,7 @@ def upload_stimuli(request):
                     word2=row[1], word3=row[2], word4=row[3], word5=row[4], word6=row[5])
         quads.append(quad)
 
-    Quad.objects.bulk_create(quads)
+    Quad.objects.bulk_create(quads, batch_size=500)
 
     return Response({
         'success': True,
