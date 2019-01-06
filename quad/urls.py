@@ -23,5 +23,10 @@ urlpatterns = [
     path('survey/', views.protected_index, name='admin'),
     path('survey/<uuid:token>', views.index, name='survey'),
     path('login/', views.login, name='login'),
+    path('uploadStimuli/', views.upload_stimuli, name='upload'),
+    path('respondents/', views.respondents, name='respondents'),
+    path('quads/<uuid:token>', views.get_quads, name='quads'),
+    path('surveyResponse/', views.survey_response, name='response'),
+    path('exportSurvey/', views.export_responses, name='export'),
     path('admin/', admin.site.urls),
 ]

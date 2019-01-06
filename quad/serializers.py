@@ -30,3 +30,27 @@ class LoginSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({'password': 'Unable to log in with provided credentials.'})
 
         return user
+
+class StimuliFileSerializer(serializers.Serializer):
+    csv = serializers.CharField(min_length=1)
+    stimuli = serializers.IntegerField(min_value=1)
+
+class QuadResponseSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    rank1 = serializers.CharField(min_length=1, max_length=100)
+    rank6 = serializers.CharField(min_length=1, max_length=100)
+    word1 = serializers.CharField(min_length=1, max_length=100)
+    word2 = serializers.CharField(min_length=1, max_length=100)
+    word3 = serializers.CharField(min_length=1, max_length=100)
+    word4 = serializers.CharField(min_length=1, max_length=100)
+    word5 = serializers.CharField(min_length=1, max_length=100)
+    word6 = serializers.CharField(min_length=1, max_length=100)
+    responded = serializers.BooleanField(required=False)
+
+class SurveyResponseSerializer(serializers.Serializer):
+    uuid = serializers.UUIDField()
+    gender = serializers.ChoiceField(['Male', 'Female', 'Other'])
+    age = serializers.IntegerField(min_value=13, max_value=100)
+    nativeLanguages = serializers.ListField(child=serializers.CharField())
+    convoLanguages = serializers.ListField(child=serializers.CharField())
+    responses = QuadResponseSerializer(many=True)

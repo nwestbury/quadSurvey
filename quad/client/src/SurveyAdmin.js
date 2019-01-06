@@ -1,17 +1,16 @@
 
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import Avatar from '@material-ui/core/Avatar';
 import Button from '@material-ui/core/Button';
 import CssBaseline from '@material-ui/core/CssBaseline';
-import FormControl from '@material-ui/core/FormControl';
-import LockIcon from '@material-ui/icons/LockOutlined';
-import TextField from '@material-ui/core/TextField';
 import Paper from '@material-ui/core/Paper';
+import Grid from '@material-ui/core/Grid';
+import TextField from '@material-ui/core/TextField';
 import Typography from '@material-ui/core/Typography';
+import CircularProgress from '@material-ui/core/CircularProgress';
 import withStyles from '@material-ui/core/styles/withStyles';
 import {jsonRequest} from './helpers/api';
-import {history} from './helpers/history';
+import RespondentTable from './RespondentTable';
 
 const styles = theme => ({
   main: {
@@ -43,70 +42,179 @@ const styles = theme => ({
   submit: {
     marginTop: theme.spacing.unit * 3,
   },
+  middle: {
+    display: 'flex',
+    justifyContent: 'center',
+  },
 });
 
 class SignIn extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            username: '',
-            password: '',
-            errors: {},
+            stimuli: 1,
+            file: '',
+            error: '',
+            respondents: [],
         };
         this.handleChange = this.handleChange.bind(this);
+        this.handleFileChange = this.handleFileChange.bind(this);
         this.submitForm = this.submitForm.bind(this);
+        this.validateFile = this.validateFile.bind(this);
+        this.fetchLatest = this.fetchLatest.bind(this);
+        this.fileInput = React.createRef();
+        this.fileReader = new FileReader();
+        this.fileReader.onloadend = this.validateFile;
+    }
+
+    componentDidMount() {
+        this.fetchLatest();
     }
 
     submitForm(e) {
         e.preventDefault();
 
-        const {username, password} = this.state;
-        const self = this;
+        const {file} = this.state;
 
-        jsonRequest('/login/', 'POST', {
-            username, password
+        this.setState({error: '', loading: true});
+        if (!file) {
+            this.setState({error: 'Must upload file', loading: false});
+            return;
+        }
+
+        this.fileReader.readAsText(file);
+    }
+
+    validateFile(e) {
+
+        const {stimuli} = this.state;
+        const result = this.fileReader.result;
+
+        /*
+        const nol = result.split(/\r\n|\r|\n/).filter(e => e).length - 1; // excluded header
+        const subjects = nol / stimuli;
+
+        if (subjects % 1 !== 0) {
+            this.setState({error: `Not an even amount of stimuli per subject (${nol} total with ${stimuli} stimuli per subject)`, loading: false});
+            return;
+        }
+        */
+
+        const self = this;
+        jsonRequest('/uploadStimuli/', 'POST', {
+            csv: result,
+            stimuli,
         }).then(function(resp){
             if (resp.success) {
-                self.setState({errors: {}});
-                history.push('/survey');
+                self.setState({loading: false});
+                self.fetchLatest();
             } else {
-                self.setState({errors: resp.errors});
+                const error = resp.errors[Object.keys(resp.errors)[0]];
+                self.setState({loading: false, error});
             }
         })
-
     }
 
     handleChange(e) {
         this.setState({[e.target.name]: e.target.value});
     }
 
-    render() {
-        const {username, password, errors} = this.state;
-        const { classes } = this.props;
+    handleFileChange(e) {
+        const file = this.fileInput.current && this.fileInput.current.files[0];
+        this.setState({file});
+    }
 
-        const usernameError = errors.username && errors.username[0];
-        const passwordError = errors.password && errors.password[0];
+    fetchLatest() {
+        jsonRequest('/respondents/', 'GET', {}).then((resp) => {
+            if (resp.success) {
+                this.setState({respondents: resp.respondents});
+            }
+        });
+    }
+
+    render() {
+        const { classes } = this.props;
+        const fileName = this.state.file.name || '[No file]';
 
         return (
             <main className={classes.main}>
             <CssBaseline />
-            <Paper className={classes.paper}>
-                <Avatar className={classes.avatar}>
-                <LockIcon />
-                </Avatar>
+                <Paper className={classes.paper}>
                 <Typography component="h1" variant="h5">
                     Survey Admin
                 </Typography>
+                <br></br>
                 <form className={classes.form} onSubmit={this.submitForm}>
-                    <Button
-                        type="submit"
-                        fullWidth
-                        variant="contained"
-                        color="primary"
-                        className={classes.submit}
-                    >
-                        Sign in
-                    </Button>
+                    <input
+                        accept=".csv"
+                        name="csvFile"
+                        className={classes.input}
+                        id="button-input"
+                        multiple
+                        type="file"
+                        hidden
+                        ref={this.fileInput}
+                        onChange={this.handleFileChange}
+                    />
+                    <Grid container spacing={24}>
+                        <Grid item xs={5}>
+                            Upload Quads:
+                        </Grid>
+                        <Grid item xs={7}>
+                            <label htmlFor="button-input">
+                                <Button variant="raised" component="span" color="primary" className={classes.button}>
+                                    Upload
+                                </Button>
+                               {' ' + fileName}
+                            </label>
+                        </Grid>
+                        <Grid item xs={12}>
+                            <TextField
+                                id="stimuli"
+                                name="stimuli"
+                                label="Number of Stimuli per Subject"
+                                value={this.state.stimuli}
+                                onChange={this.handleChange}
+                                type="number"
+                                inputProps={{
+                                    min: "1" // 0 is technically valid but... it makes validation more difficult
+                                }}
+                                InputLabelProps={{
+                                    shrink: true,
+                                }}
+                                margin="normal"
+                                error={this.state.error.length > 0}
+                                helperText={this.state.error}
+                                fullWidth
+                            />
+                        </Grid>
+                        <Grid item xs={12} className={classes.middle}>
+                            <Button
+                                variant="contained"
+                                color="primary"
+                                type="submit"
+                                onClick={this.handleNext}
+                                className={classes.button}
+                                disabled={this.state.loading}
+                            >
+                                {this.state.loading ? <CircularProgress /> : 'Generate'}
+                            </Button>
+                        </Grid>
+                        <Grid item xs={12} className={classes.middle}>
+                            <RespondentTable rows={this.state.respondents}></RespondentTable>
+                        </Grid>
+                        <Grid item xs={12} className={classes.middle}>
+                            <Button
+                                variant="contained"
+                                color="primary"
+                                type="submit"
+                                className={classes.button}
+                                href="/exportSurvey/"
+                            >
+                                Export Survey Responses
+                            </Button>
+                        </Grid>
+                    </Grid>
                 </form>
             </Paper>
             </main>
