@@ -11,11 +11,11 @@ function AddressForm() {
       <Grid container spacing={24}>
         <Grid item xs={12}>
           <Typography gutterBottom>
-            We are interested in understanding the relationship between how a word sounds
-            and its characteristics. In this study, we will show you sets of four words and
-            ask you to choose which of the four you think is most round, and which you think
-            is the most spiky. You will indicate your choice by clicking on two radio buttons,
-            one to select the one that is most round and one to select the one that is most spiky.
+            We are interested in the shapes of various objects. In this study, we will show you sets of six words. You will be asked to choose the word that you think refers to the roundest object, and the one that refers to the spikiest object, out of the six. Make your choice by clicking the appropriate button.
+            <br></br><br></br>
+            There may not always be a correct answer. That’s okay, just go with what you feel is the best answer.
+            <br></br><br></br>
+            At times you may feel that a certain object can take on various shapes. Just make your decision based on what you think is the most common shape of that object.
           </Typography>
         </Grid>
       </Grid>
