@@ -217,7 +217,7 @@ def export_responses(request):
                 SELECT qq.uuid, qv.age, qv.gender, qv.native_languages, qv.convo_languages,
                        qr.rank1, qr.rank2, qr.rank3, qr.rank4, qr.rank5, qr.rank6
                 FROM quad_quad qq JOIN quad_value qv ON (qq.uuid = qv.uuid)
-                    JOIN quad_rankable qr ON (qq.uuid = qr.uuid)
+                    JOIN quad_rankable qr ON (qq.id = qr.quad_id)
                 WHERE qq.upload_id = (SELECT MAX(upload_id) FROM quad_quad)
                 ORDER BY qq.uuid
             """)
